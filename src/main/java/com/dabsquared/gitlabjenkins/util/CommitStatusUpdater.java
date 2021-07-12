@@ -183,13 +183,22 @@ public class CommitStatusUpdater {
 
             String scmRevisionHash = null;
             if (scmRevision instanceof AbstractGitSCMSource.SCMRevisionImpl) {
+                if (scmRevision == null) {
+                    LOGGER.log(Level.INFO, "Build does not contain SCM revision object.");
+                    return result;
+                }
                 scmRevisionHash = ((AbstractGitSCMSource.SCMRevisionImpl) scmRevision).getHash();
-            }
 
-            for (final BuildData buildData : buildDatas) {
-                for (final Entry<String, Build> buildByBranchName : buildData.getBuildsByBranchName().entrySet()) {
-                    if (buildByBranchName.getValue().getSHA1().equals(ObjectId.fromString(scmRevisionHash))) {
-                        addGitLabBranchBuild(result, scmRevisionHash, buildData.getRemoteUrls(), environment, gitLabClient);
+                if (scmRevisionHash == null) {
+                    LOGGER.log(Level.INFO, "Build does not contain SCM revision hash.");
+                    return result;
+                }
+
+                for (final BuildData buildData : buildDatas) {
+                    for (final Entry<String, Build> buildByBranchName : buildData.getBuildsByBranchName().entrySet()) {
+                        if (buildByBranchName.getValue().getSHA1().equals(ObjectId.fromString(scmRevisionHash))) {
+                            addGitLabBranchBuild(result, scmRevisionHash, buildData.getRemoteUrls(), environment, gitLabClient);
+                        }
                     }
                 }
             }
